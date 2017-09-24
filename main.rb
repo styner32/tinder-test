@@ -3,13 +3,16 @@ require './gettoken'
 require './fetcher'
 require './like'
 
-token = gettoken["token"]
-
 ids = {}
 
-1000.times do
+token = get_token
+
+1.times do
   items = fetch(token)
 
+  puts items
+
+=begin
   if items == nil || items.size == 0
     puts "done!!"
     break
@@ -44,4 +47,5 @@ ids = {}
 
   puts "Total likes: #{ids.count}"
   sleep(10 + rand(10))
+=end
 end

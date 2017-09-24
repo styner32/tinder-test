@@ -9,7 +9,11 @@ $facebook_info = {
   "facebook_id": $conf['facebook_id']
 }
 
-def gettoken()
+def token_from_facebook()
   res = HTTP.post("https://api.gotinder.com/auth", json: $facebook_info)
   return JSON.parse(res.body)
+end
+
+def get_token
+  $conf['token']
 end

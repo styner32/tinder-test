@@ -1,23 +1,20 @@
 require 'http'
 require 'json'
 require 'yaml'
-require './config'
+require 'zlib'
+require 'stringio'
+require './headers'
 
 def fetch(token)
-  options = HTTP::Options.new(headers: {
-    "Authorization" => "Token token \"#{token}\"",
-    "x-client-version" => $conf['client_version'],
-    "app-version" => $conf['app_version'],
-    "Proxy-Connection" => "keep-alive",
-    "platform" => "ios",
-    "Accept-Language" => "en-SG;q=1",
-    "Accept" => "*/*",
-    "User-Agent" => $conf['user_agent'],
-    "Connection" => "keepkeep-alive",
-    "X-Auth-Token" => token,
-    "os_version" => "90000300002"
-  })
+  headers = get_headers(token)
+  puts headers
+  options = HTTP::Options.new(headers: get_headers(token))
+  res = HTTP.get("https://api.gotinder.com/v2/recs/core?fast_match=1&locale=en-SG", options)
 
-  res = HTTP.get("https://api.gotinder.com/user/recs", options)
-  return JSON.parse(res.body)["results"]
+  gz = Zlib::GzipReader.new(StringIO.new(res.body.to_s))
+
+  result = JSON.parse(gz.read)
+  puts result
+  return result["data"]["results"]
 end
+
