@@ -1,5 +1,4 @@
 ---
-client_version: 123
-app_version: 234
-user_agent: UA
-token: t0k3n
+facebook_token: fb_token
+facebook_id: fb_id
+client_version: 8.0.0

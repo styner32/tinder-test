@@ -1,51 +1,53 @@
-require './config'
-require './gettoken'
-require './fetcher'
-require './like'
+require './matcher'
+
+m = Matcher.new
+m.authenticate
 
 ids = {}
-
-token = get_token
+traveling = true
 
 1.times do
-  items = fetch(token)
-
-  puts items
-
-=begin
+  items = m.fetch
   if items == nil || items.size == 0
     puts "done!!"
     break
   end
 
+  puts "fetched: #{items.count}"
+
   items.each do |item|
     user = item["user"]
-    unless user
-      p user
-      next
-    end
+    next unless user
 
+    puts user
     id = user["_id"]
-    content_hash = user["content_hash"]
+    content_hash = item["content_hash"]
+    distance = item["distance_mi"]
     female = user["gender"] == 1
 
     unless female
-      puts "Wrong gender!!!!"
+      puts "I am not ready for this."
       next
     end
 
-    puts "birth_date: #{user["birth_date"]} from: #{user['distance_mi']}, bio: #{user['bio']}"
+    if !traveling && (!distance || distance > 12)
+      puts "too far from here: #{user['distance_mi']}"
+      next
+    end
+
     if ids[id]
       puts "duplicated"
-    else
-      puts user["photos"].map { |p| p["url"] }
-      p like(token, id, content_hash, true)
-      ids[id] = true
-      # sleep(1 + rand(10) / 10.0)
+      next
     end
+
+    ids[id] = true
+
+    puts "birth_date: #{user["birth_date"]} bio: #{user['bio']}"
+    puts user["photos"].map { |p| p["url"] }
+    puts m.like(id, content_hash, traveling)
+    sleep(1 + rand(10) / 10.0)
   end
 
   puts "Total likes: #{ids.count}"
-  sleep(10 + rand(10))
-=end
+  # sleep(10 + rand(10))
 end
