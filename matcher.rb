@@ -6,10 +6,11 @@ class Matcher
   DEFAULT_CONFIG_PATH = 'config.yml'
   API_HOST = 'https://api.gotinder.com'
 
+  attr_reader :config, :token
+
   def initialize(config_path = DEFAULT_CONFIG_PATH)
     @config = YAML::load_file(config_path)
     @token = nil
-    @logger = Logger.new(STDOUT)
   end
 
   def authenticate
@@ -24,21 +25,19 @@ class Matcher
       headers: get_auth_headers)
 
     j = JSON.parse(res.body)
-    if j["data"]["api_token"]
-      puts "succesfully authenticate: #{j["data"]["api_token"]}"
-    else
+    if !j['data'] || !j['data']['api_token']
       puts "failed to authenticate: #{j}"
+      return
     end
 
-    @token = j["data"]["api_token"]
+    @token = j['data']['api_token']
   end
 
   def fetch
     options = HTTP::Options.new(headers: get_headers)
     res = HTTP.get("#{API_HOST}/v2/recs/core?fast_match=1&locale=en-SG", options)
     result = JSON.parse(res.body)
-    puts result
-    return result["data"]["results"]
+    return result['data']['results']
   end
 
   def like(id, content_hash, user_traveling)
@@ -46,8 +45,7 @@ class Matcher
     url = "#{API_HOST}/like/#{id}?content_hash=#{content_hash}"
     url += "&user_traveling=1" if user_traveling
 
-    res = HTTP.post(url, options)
-    return JSON.parse(res.body)
+    return HTTP.get(url, options).body
   end
 
   def pass(id, content_hash, user_traveling)
@@ -55,11 +53,9 @@ class Matcher
     url = "#{API_HOST}/pass/#{id}?content_hash=#{content_hash}"
     url += "&user_traveling=1" if user_traveling
 
-    res = HTTP.post(url, options)
-    return JSON.parse(res.body)
+    return HTTP.get(url, options).body
   end
 
-  @private
   def get_headers
     @_headers ||= {
       "Authorization" => "Token token=\"#{@token}\"",
