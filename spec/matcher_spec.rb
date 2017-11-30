@@ -2,15 +2,15 @@ require './matcher'
 require 'spec_helper'
 
 RSpec.describe Matcher do
+  let(:config_path) { File.join(File.dirname(__FILE__), 'fixtures/test_config.yml') }
   before do
     stub_const('Matcher::API_HOST', 'http://match.test')
-    stub_const('Matcher::DEFAULT_CONFIG_PATH', File.join(File.dirname(__FILE__), 'fixtures/config.yml'))
+    stub_const('Matcher::DEFAULT_CONFIG_PATH', config_path)
   end
 
   describe '.new' do
     it "configures from specified file" do
-      path = File.join(File.dirname(__FILE__), 'fixtures/config.yml')
-      m = Matcher.new(path)
+      m = Matcher.new(config_path)
 
       expect(m.config).to eq({
         'facebook_token' => 'fb_test_token',
